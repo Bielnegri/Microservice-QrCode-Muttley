@@ -1,5 +1,6 @@
 package com.ms.qrcode.qrcode;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ms.qrcode.qrcode.dto.QrCodeRequest;
 import com.ms.qrcode.qrcode.dto.QrCodeResponse;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
@@ -16,9 +18,12 @@ public class QrCodeConsumer {
     private final QrCodeService qrCodeService;
     private final KafkaTemplate<String, QrCodeResponse> kafkaTemplate;
     private static final String RESPONSE_TOPIC = "qrcode.gerar.response";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @KafkaListener(topics = "qrcode.gerar.request", groupId = "qrcode-group")
-    public void consumir(QrCodeRequest request) {
+    public void consumir(String payload) throws JsonProcessingException {
+        QrCodeRequest request = objectMapper.readValue(payload, QrCodeRequest.class);
+
         log.info("Gerando QR Code: eventoId={}", request.eventoId());
         QrCodeResponse response;
 
@@ -38,7 +43,7 @@ public class QrCodeConsumer {
                     request.eventoId(), null, "ERROR", e.getMessage()
             );
         }
-
+        
         kafkaTemplate.send(RESPONSE_TOPIC, request.eventoId().toString(), response);
     }
 }
