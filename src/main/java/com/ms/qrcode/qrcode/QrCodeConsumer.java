@@ -24,26 +24,27 @@ public class QrCodeConsumer {
     public void consumir(String payload) throws JsonProcessingException {
         QrCodeRequest request = objectMapper.readValue(payload, QrCodeRequest.class);
 
-        log.info("Gerando QR Code: eventoId={}", request.eventoId());
+        log.info("Gerando QR Code: eventoId={}, tipo={}", request.eventoId(), request.tipo());
         QrCodeResponse response;
 
         try {
             String url = qrCodeService.gerarUrlQrCode(
                     request.baseUrl(),
                     request.eventoId(),
-                    request.tema()
+                    request.tema(),
+                    request.tipo()
             );
 
             response = new QrCodeResponse(
-                    request.eventoId(), url, "SUCCESS", null
+                    request.eventoId(), url, "SUCCESS", null, request.tipo()
             );
         } catch (Exception e) {
-            log.error("Erro ao gerar QR Code: eventoId={}", request.eventoId(), e);
+            log.error("Erro ao gerar QR Code: eventoId={}, tipo={}", request.eventoId(), request.tipo(), e);
             response = new QrCodeResponse(
-                    request.eventoId(), null, "ERROR", e.getMessage()
-            );
+                    request.eventoId(), null, "ERROR", e.getMessage(),
+                    request.tipo());
         }
-        
+
         kafkaTemplate.send(RESPONSE_TOPIC, request.eventoId().toString(), response);
     }
 }
