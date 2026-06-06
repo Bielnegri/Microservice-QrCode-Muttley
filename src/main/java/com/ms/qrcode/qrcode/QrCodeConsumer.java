@@ -45,6 +45,7 @@ public class QrCodeConsumer {
                     request.tipo());
         }
 
-        kafkaTemplate.send(RESPONSE_TOPIC, request.eventoId().toString(), response);
+        String chave = request.eventoId() + "-" + request.tipo().name();
+        kafkaTemplate.send(RESPONSE_TOPIC, chave, response);
     }
 }
