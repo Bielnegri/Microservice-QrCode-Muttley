@@ -13,7 +13,7 @@ public class QrCodeService {
 
     public String gerarUrlQrCode(String baseUrl, Long eventoId, String eventoTema, TipoQrCode tipo) {
         String urlDestino = switch (tipo) {
-            case INSCRICAO    -> baseUrl + "/eventos/" + eventoId + "/inscricao";
+            case INSCRICAO    -> baseUrl + "/eventos/" + eventoId;
             case CONFIRMACAO  -> baseUrl + "/eventos/" + eventoId + "/confirmar-presenca";
         };
 
